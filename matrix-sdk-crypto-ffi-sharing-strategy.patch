@@ -1,0 +1,25 @@
+diff --git a/bindings/matrix-sdk-crypto-ffi/src/lib.rs b/bindings/matrix-sdk-crypto-ffi/src/lib.rs
+index 5d7a6d0..796343e 100644
+--- a/bindings/matrix-sdk-crypto-ffi/src/lib.rs
++++ b/bindings/matrix-sdk-crypto-ffi/src/lib.rs
+@@ -684,11 +684,19 @@ pub struct EncryptionSettings {
+     /// Should fail to send when a verified user has unverified devices, or when
+     /// a previously verified user replaces their identity.
+     pub error_on_verified_user_problem: bool,
++    /// The strategy to collect the devices that receive the room key. When set,
++    /// it takes precedence over `only_allow_trusted_devices` and
++    /// `error_on_verified_user_problem`; this is the only way to choose
++    /// [`CollectStrategy::IdentityBasedStrategy`] (MSC4153).
++    #[uniffi(default = None)]
++    pub sharing_strategy: Option<CollectStrategy>,
+ }
+ 
+ impl From<EncryptionSettings> for RustEncryptionSettings {
+     fn from(v: EncryptionSettings) -> Self {
+-        let sharing_strategy = if v.only_allow_trusted_devices {
++        let sharing_strategy = if let Some(strategy) = v.sharing_strategy {
++            strategy
++        } else if v.only_allow_trusted_devices {
+             CollectStrategy::OnlyTrustedDevices
+         } else if v.error_on_verified_user_problem {
+             CollectStrategy::ErrorOnVerifiedUserProblem
